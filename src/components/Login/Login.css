@@ -1,0 +1,28 @@
+.login-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 5em;
+    /*margin: 0 auto;*/
+    /*width: 50%;*/
+    /*height: 100px;*/
+    /*background-color: #ccc;*/
+}
+
+.login-input {
+    /*background-color: #dcd;*/
+    padding: 30px;
+    display: inline-block;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.button {
+    width: 40%;
+    display: inline-block;
+    margin: 5px !important;
+}
