@@ -5,6 +5,32 @@ import Login from "./components/Login/Login";
 import { Route, Redirect } from 'react-router-dom';
 import Home from './components/Home/Home';
 import Register from './components/Register/Register';
+import * as authUtils from './utils/AuthUtils';
+
+const auth = {
+    isAuthenticated: false,
+    authenticate() {
+        authUtils.loginUser(false, (data) => {
+            if (data.auth) {
+                this.isAuthenticated = true;
+            } else {
+                this.isAuthenticated = false;
+            }
+        });
+    },
+    signout(cb) {
+        this.isAuthenticated = false
+        setTimeout(cb, 100)
+    }
+}
+
+const PrivateRoute = ({component: Component, ...rest}) => (
+    <Route {...rest} render={(props) => (
+        auth.isAuthenticated === true ?
+            <Component {...props}/>
+           :<Redirect to={'/'}/>
+    )} />
+);
 
 class App extends Component {
 
@@ -26,7 +52,7 @@ class App extends Component {
         if ((typeof user === 'undefined' || user === '') || (typeof password === 'undefined' || password === '')) {
             alert('need user and pass');
         } else {
-            const auth = this.attemptLogin(user, password);
+            this.attemptLogin(user, password);
         }
     };
 
@@ -35,34 +61,31 @@ class App extends Component {
             username: user,
             password: password
         });
-        const myHeaders = new Headers();
-        myHeaders.append('Content-Type', 'application/json');
-        fetch('http://localhost:3001/login', {
-            method: 'POST',
-            mode: 'cors',
-            body: authBody,
-            headers: myHeaders
-        }).then((res) => {
-            return res.json();
-        }).then((data) => {
+
+        authUtils.loginUser(authBody, (data) => {
             console.log(data);
             if (data.auth === true) {
-                //logged in redirect
-            } else {
-                //invalid password
+                auth.authenticate(() => {
+                    this.setState({
+                        auth: true
+                    });
+                });
             }
         });
     };
 
     render() {
-    return (
-      <div>
-        <NavBar/>
-        <Login login={this.handleLogin} register={this.handleRegister}/>
-        <Route path={'/register'} component={Register} />
-        <Route  path={'/home'} component={Home} />
-      </div>
-    );
+        return (
+          <div>
+            <NavBar/>
+            <Login login={this.handleLogin} register={this.handleRegister}/>
+            <Route path={'/register'} component={Register} />
+            <PrivateRoute  path={'/home'} component={Home} />
+              {this.state.auth ?
+                  <Redirect to={'/home'}/> : ''
+              }
+          </div>
+        );
   }
 }
 
